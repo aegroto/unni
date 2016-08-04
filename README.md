@@ -46,7 +46,7 @@ Now you can call your bot on telegram and have fun!
 
 ## Testing the deployed Bot
 
-You can test it by adding [GDGTelegramBot](http://telegram.me/unni_bot) to your Telegram
+You can test it by adding the [unni_bot](http://telegram.me/unni_bot) to your Telegram
 
 ## Info
 
