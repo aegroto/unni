@@ -1,9 +1,9 @@
 # unni
-unni is a Telegram Bot that gives info about events from sciabaca
+unni is a Telegram Bot that gives info about events from isamuni
 
-**unni** is the Sicilian word for *where*. That is one of the main questions people ask about events: where is it? **unni**, however, provides more information about events than just where that happen. 
+**unni** is the Sicilian word for *where*. That is one of the main questions people ask about events: where is it? **unni**, however, provides more information about events than just where that happen.
 
-**unni** will serve the events data from [**sciabaca**](https://github.com/sic2/sciabaca). 
+**unni** will serve the events data from [**isamuni**](https://github.com/sic2/isamuni).
 
 ## commands
 
@@ -13,7 +13,7 @@ This is the list of commands supported by **unni**
 - /today
 - /future
 
-We would love to have other commands, such as `/topic` or `/city`, in the future. 
+We would love to have other commands, such as `/topic` or `/city`, in the future.
 
 ## Running the Bot Locally
 
@@ -25,14 +25,24 @@ The first step to run the bot is to install the required dependencies. You can d
 $ pip install python-telegram-bot --upgrade
 ```
 
-Then call the [@BotFather](https://telegram.me/BotFather) within Telegram and use the `/newbot` command to create a new bot. Then do the following:
+Then call the [@BotFather](https://telegram.me/BotFather) within Telegram and use the `/newbot` command to create a new bot.
+
+Then create a configuration file called *unni.cfg* that follows this template:
 
 ```
-$ touch token.conf # this will create an empty file named token.conf
+[bot]
+name = unni
 
-# Open token.conf using your favourite editor
-# Paste the bot's token in the first line of the configuration file
-# Add an empty line at the end of the file
+[source]
+name = isamuni
+url = http://isamuni.it/events.json
+
+[telegram]
+token = 2ThisIsGoingToBeAVeryLongTokenFromBotFatherXY
+
+[log]
+dir = logs
+name = unni_bot.log
 ```
 
 Then run:
@@ -41,7 +51,7 @@ Then run:
 $ python unni.py
 ```
 
-Now you can call your bot on telegram and have fun! 
+Now you can call your bot on telegram and have fun!
 
 
 ## Testing the deployed Bot
