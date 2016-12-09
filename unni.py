@@ -36,9 +36,15 @@ logger.info('Logger initialised')
 
 
 def getEventTime(time):
-    time = time[0:10] + ' ' + time[11:19]
-    time = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
+    #time = time[0:10] + ' ' + time[11:19]
+    time = time[0:23]
+    time = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%f')
     return time
+
+
+def readableTime(time):
+    time = time[0:10] + ' ' + time[11:16]
+    return unicode(datetime.strptime(time, '%Y-%m-%d %H:%M'))[:-3]
 
 
 def isToday(time):
@@ -78,8 +84,8 @@ def today_handle(bot, update):
         name = event['name']
         starts_at = event['starts_at']
         starts_at_t = getEventTime(starts_at)
-        if isToday(starts_at):
-            msg += "*" + name + "* @ " + unicode(starts_at_t) + "\n"
+        if isToday(starts_at_t):
+            msg += "*" + name + "* @ " + readableTime(starts_at) + "\n"
 
     bot.sendMessage(update.message.chat_id, text=msg,
                     parse_mode=telegram.ParseMode.MARKDOWN)
@@ -95,8 +101,8 @@ def future_handle(bot, update):
         name = event['name']
         starts_at = event['starts_at']
         starts_at_t = getEventTime(starts_at)
-        if isFuture(starts_at):
-            msg += "*" + name + "* @ " + unicode(starts_at_t) + "\n"
+        if isFuture(starts_at_t):
+            msg += "*" + name + "* @ " + readableTime(starts_at) + "\n"
 
     bot.sendMessage(update.message.chat_id, text=msg,
                     parse_mode=telegram.ParseMode.MARKDOWN)
