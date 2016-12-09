@@ -69,7 +69,8 @@ def start_handle(bot, update):
 
 def help_handle(bot, update):
     """Return a list of instruction on how to use the bot"""
-    help = 'Hello! I am unni_bot :) \n\n'\
+    help = 'Hello! I am unni_bot :) \n'\
+        'I will help you find tech events in Sicily via isamuni.it\n\n'\
         'The available commands are: \n'\
         '- /today \n'\
         '- /future'
@@ -82,7 +83,7 @@ def today_handle(bot, update):
     response = urllib2.urlopen(SOURCE_URL)
     events = json.load(response)
 
-    msg = 'The events of today are: \n'
+    msg = ''
     for event in events:
         name = event['name']
         starts_at = event['starts_at']
@@ -90,8 +91,12 @@ def today_handle(bot, update):
         if isToday(starts_at_t):
             msg += "*" + name + "* @ " + readableTime(starts_at) + "\n"
 
-    bot.sendMessage(update.message.chat_id, text=msg,
-                    parse_mode=telegram.ParseMode.MARKDOWN)
+    if not msg:
+        bot.sendMessage(update.message.chat_id, text='No events today')
+    else:
+        msg = 'The events of today are: \n' + msg
+        bot.sendMessage(update.message.chat_id, text=msg,
+                        parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 def future_handle(bot, update):
@@ -99,7 +104,7 @@ def future_handle(bot, update):
     response = urllib2.urlopen(SOURCE_URL)
     events = json.load(response)
 
-    msg = 'The upcoming events are: \n'
+    msg = ''
     for event in events:
         name = event['name']
         starts_at = event['starts_at']
@@ -107,8 +112,13 @@ def future_handle(bot, update):
         if isFuture(starts_at_t):
             msg += "*" + name + "* @ " + readableTime(starts_at) + "\n"
 
-    bot.sendMessage(update.message.chat_id, text=msg,
-                    parse_mode=telegram.ParseMode.MARKDOWN)
+    if not msg:
+        bot.sendMessage(update.message.chat_id,
+                        text='No events today')
+    else:
+        msg = 'The upcoming events are: \n' + msg
+        bot.sendMessage(update.message.chat_id, text=msg,
+                        parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 def error_handle(bot, update, error):
