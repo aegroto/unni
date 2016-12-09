@@ -79,6 +79,9 @@ def help_handle(bot, update):
 
 def today_handle(bot, update):
     """Return list of events happening today"""
+    response = urllib2.urlopen(SOURCE_URL)
+    events = json.load(response)
+
     msg = 'The events of today are: \n'
     for event in events:
         name = event['name']
