@@ -1,0 +1,10 @@
+version: '2'
+
+services:
+  unni:
+    build: .
+    command: bash -c "./unni.py"
+    volumes:
+      - ./logs:/logs
+    restart: unless-stopped
+    

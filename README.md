@@ -53,6 +53,22 @@ $ python unni.py
 
 Now you can call your bot on telegram and have fun!
 
+## Run unni via docker and docker-compose
+
+**docker**
+
+```
+$ docker build -t unni .
+$ docker run unni
+```
+
+
+**docker-compose**
+```
+$ docker-compose build
+$ docker-compose up -d # will start container in background
+```
+
 
 ## Testing the deployed Bot
 
