@@ -21,10 +21,10 @@ SOURCE_NAME = config.get('source', 'name')
 SOURCE_URL = config.get('source', 'url')
 
 # Top level commands for the bot
-START_CMD = 'start'
-HELP_CMD = 'help'
-TODAY_CMD = 'today'
-FUTURE_CMD = 'future'
+START_CMD = config.get('commands', 'start')
+HELP_CMD = config.get('commands', 'help')
+TODAY_CMD = config.get('commands', 'today')
+FUTURE_CMD = config.get('commands', 'future')
 
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
@@ -36,15 +36,14 @@ logger.info('Logger initialised')
 
 
 def getEventTime(time):
-    #time = time[0:10] + ' ' + time[11:19]
     time = time[0:23]
     time = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%f')
     return time
 
 
 def readableTime(time):
-    time = time[0:10] + ' ' + time[11:16]
-    return unicode(datetime.strptime(time, '%Y-%m-%d %H:%M'))[:-3]
+    time = time[0:10]
+    return unicode(datetime.strptime(time, '%Y-%m-%d'))[:-8]
 
 
 def isToday(time):
@@ -55,70 +54,76 @@ def isFuture(time):
     return time.date() > datetime.today().date()
 
 
+def getEvents():
+    response = urllib2.urlopen(SOURCE_URL)
+    return json.load(response)
+
+
+def processEvent(event, condition):
+    name = event['name']
+    location = event['location_name']
+    starts_at = event['starts_at']
+    starts_at_t = getEventTime(starts_at)
+    if condition(starts_at_t):
+        return "*" + name + "* @ " + \
+            readableTime(starts_at) + " - " + location + "\n\n"
+
+    return ''
+
+
 def start_handle(bot, update):
     """Return a welcome message to the user"""
-    msg = "Hello {user_name}! I am {bot_name} \n"
-    msg += "Type /help for any info on how to interact with me"
-
-    # Send the message
+    msg = config.get('messages', 'welcome')
     bot.send_message(chat_id=update.message.chat_id,
                      text=msg.format(
                          user_name=update.message.from_user.first_name,
-                         bot_name=bot.name))
+                         bot_name=bot.name,
+                         help_cmd=HELP_CMD))
 
 
 def help_handle(bot, update):
     """Return a list of instruction on how to use the bot"""
-    help = 'Hello! I am unni_bot :) \n'\
-        'I will help you find tech events in Sicily via isamuni.it\n\n'\
-        'The available commands are: \n'\
-        '- /today \n'\
-        '- /future'
-
-    bot.sendMessage(update.message.chat_id, text=help)
+    msg = config.get('messages', 'help')
+    bot.send_message(chat_id=update.message.chat_id,
+                     text=msg.format(
+                         today_cmd=TODAY_CMD,
+                         future_cmd=FUTURE_CMD))
 
 
 def today_handle(bot, update):
     """Return list of events happening today"""
-    response = urllib2.urlopen(SOURCE_URL)
-    events = json.load(response)
+    events = getEvents()
 
-    msg = ''
+    today_events = ''
     for event in events:
-        name = event['name']
-        starts_at = event['starts_at']
-        starts_at_t = getEventTime(starts_at)
-        if isToday(starts_at_t):
-            msg += "*" + name + "* @ " + readableTime(starts_at) + "\n"
+        today_events += processEvent(event, isToday)
 
-    if not msg:
-        bot.sendMessage(update.message.chat_id, text='No events today')
+    if not today_events:
+        msg = config.get('messages', 'failure')
+        bot.sendMessage(chat_id=update.message.chat_id, text=msg)
     else:
-        msg = 'The events of today are: \n' + msg
-        bot.sendMessage(update.message.chat_id, text=msg,
+        msg = config.get('messages', 'today')
+        msg += "\n" + today_events
+        bot.sendMessage(chat_id=update.message.chat_id, text=msg,
                         parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 def future_handle(bot, update):
     """Return list of future events"""
-    response = urllib2.urlopen(SOURCE_URL)
-    events = json.load(response)
+    events = getEvents()
 
-    msg = ''
+    future_events = ''
     for event in events:
-        name = event['name']
-        starts_at = event['starts_at']
-        starts_at_t = getEventTime(starts_at)
-        if isFuture(starts_at_t):
-            msg += "*" + name + "* @ " + readableTime(starts_at) + "\n"
+        future_events += processEvent(event, isFuture)
 
-    if not msg:
-        bot.sendMessage(update.message.chat_id,
-                        text='No events today')
+    if not future_events:
+        msg = config.get('messages', 'failure')
+        bot.sendMessage(update.message.chat_id, text=msg)
     else:
-        msg = 'The upcoming events are: \n' + msg
-        bot.sendMessage(update.message.chat_id, text=msg,
-                        parse_mode=telegram.ParseMode.MARKDOWN)
+        msg = config.get('messages', 'future')
+        msg += "\n" + future_events
+        bot.send_message(chat_id=update.message.chat_id, text=msg,
+                         parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 def error_handle(bot, update, error):
@@ -127,7 +132,7 @@ def error_handle(bot, update, error):
 
 
 def main():
-    logger.info('Starting Bot!')
+    logger.info('Starting the Unni Bot!')
     updater = Updater(TELEGRAM_TOKEN)
     dp = updater.dispatcher
 
@@ -140,7 +145,6 @@ def main():
 
     updater.start_polling()
     logger.info('Unni Bot started!')
-
     updater.idle()
 
 if __name__ == '__main__':

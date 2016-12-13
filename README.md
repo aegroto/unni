@@ -43,6 +43,24 @@ token = 2ThisIsGoingToBeAVeryLongTokenFromBotFatherXY
 [log]
 dir = logs
 name = unni_bot.log
+
+[commands]
+start = start
+help = aiuto
+future = futuri
+today = oggi
+
+[messages]
+welcome = Ciao {user_name}! Io sono {bot_name}
+    Usa il comando: /{help_cmd} per maggiori info su come posso aiutarti
+help = Unni ti aiuterà a trovare gli eventi tech in Sicilia.
+    I comandi disponibili sono:
+    - /{today_cmd}
+    - /{future_cmd}
+    Unni usa isamuni.it come fonte di dati.
+failure = Mi dispiace, ma non ho trovato eventi
+today = Gli eventi di oggi sono:
+future = I prossimi eventi sono:
 ```
 
 Then run:
