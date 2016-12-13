@@ -99,8 +99,9 @@ def today_handle(bot, update):
         today_events += processEvent(event, isToday)
 
     if not today_events:
-        msg = config.get('messages', 'failure')
-        bot.sendMessage(chat_id=update.message.chat_id, text=msg)
+        event_string = processEvent(events[0],isFuture)
+        msg = config.get('messages', 'failure') + "\n\n" + config.get('messages', 'next_event') + "\n" + event_string.encode('utf8')
+        bot.sendMessage(chat_id=update.message.chat_id, text=msg, parse_mode=telegram.ParseMode.MARKDOWN)
     else:
         msg = config.get('messages', 'today')
         msg += "\n" + today_events
