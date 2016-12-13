@@ -59,6 +59,7 @@ help = Unni ti aiuterà a trovare gli eventi tech in Sicilia.
     - /{future_cmd}
     Unni usa isamuni.it come fonte di dati.
 failure = Mi dispiace, ma non ho trovato eventi
+next_event = Il prossimo evento sarà:
 today = Gli eventi di oggi sono:
 future = I prossimi eventi sono:
 ```
