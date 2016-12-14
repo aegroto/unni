@@ -58,6 +58,8 @@ def getEvents():
     response = urllib2.urlopen(SOURCE_URL)
     return json.load(response)
 
+def escape_md(msg):
+    return msg.replace("_","\_")
 
 def processEvent(event, condition):
     name = event['name']
@@ -65,8 +67,8 @@ def processEvent(event, condition):
     starts_at = event['starts_at']
     starts_at_t = getEventTime(starts_at)
     if condition(starts_at_t):
-        return "*" + name + "* @ " + \
-            readableTime(starts_at) + " - " + location + "\n\n"
+        return escape_md("*" + name + "* @ " + \
+            readableTime(starts_at) + " - " + location + "\n\n")
 
     return ''
 
