@@ -30,9 +30,6 @@ Then call the [@BotFather](https://telegram.me/BotFather) within Telegram and us
 Then create a configuration file called *unni.cfg* that follows this template:
 
 ```
-[bot]
-name = unni
-
 [source]
 name = isamuni
 url = http://isamuni.it/events.json
@@ -46,9 +43,11 @@ name = unni_bot.log
 
 [commands]
 start = start
-help = aiuto
-future = futuri
-today = oggi
+help = aiuto, help, h
+future = futuri, future
+today = oggi, today
+subscribe = subscribe, sub
+unsubscribe = unsubscribe, unsub
 
 [messages]
 welcome = Ciao {user_name}! Io sono {bot_name}
@@ -57,11 +56,19 @@ help = Unni ti aiuterà a trovare gli eventi tech in Sicilia.
     I comandi disponibili sono:
     - /{today_cmd}
     - /{future_cmd}
-    Unni usa isamuni.it come fonte di dati.
+    - /{sub_cmd}
+    - /{unsub_cmd}
+    Unni usa isamuni.it come fonte di dati
 failure = Mi dispiace, ma non ho trovato eventi
-next_event = Il prossimo evento sarà:
 today = Gli eventi di oggi sono:
 future = I prossimi eventi sono:
+subscribe = Grazie per esserti iscritto a unni. 
+    Verrai notificato ogni {frequency} ore sugli eventi del giorno
+unsubscribe = Unni non ti invierà piú notifiche
+unsubscribe_fail = Non ti sei mai registrato per le notifiche di unni
+
+[subscribe]
+frequency = 86400
 ```
 
 Then run:
