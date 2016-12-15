@@ -141,7 +141,7 @@ def future_handle(bot, update):
 
 def get_job(jobs, chat_id):
     for job in jobs:
-        if job.context.message.chat_id == chat_id:
+        if job.is_enabled() and job.context.message.chat_id == chat_id:
             return job
 
     return None
@@ -152,26 +152,32 @@ def sub_job_handle(bot, job):
 
 
 def sub_handle(bot, update, job_queue):
-    msg = config.get('messages', 'subscribe')
-    hours = int(SUB_FREQUENCY/3600)
-    bot.send_message(chat_id=update.message.chat_id,
-                     text=msg.format(frequency=hours))
+    chat_id = update.message.chat_id
+    job = get_job(job_queue.jobs(), chat_id)
+    if job is None:
+        msg = config.get('messages', 'subscribe')
+        hours = int(SUB_FREQUENCY/3600)
+        bot.send_message(chat_id=chat_id, text=msg.format(frequency=hours))
 
-    job = Job(sub_job_handle, SUB_FREQUENCY, repeat=True, context=update)
-    job_queue.put(job, next_t=0.0)
+        job = Job(sub_job_handle, SUB_FREQUENCY, repeat=True, context=update)
+        job_queue.put(job, next_t=0.0)
+    else:
+        msg = config.get('messages', 'subscribe_fail')
+        bot.send_message(chat_id=chat_id, text=msg)
 
 
 def unsub_handle(bot, update, job_queue):
     chat_id = update.message.chat_id
-    
     job = get_job(job_queue.jobs(), chat_id)
-    if job is not None:
-        msg = config.get('messages', 'unsubscribe')
-        bot.sendMessage(chat_id=chat_id, text=msg)
-        job.schedule_removal()
-    else:
+    if job is None:
         msg = config.get('messages', 'unsubscribe_fail')
         bot.sendMessage(chat_id=chat_id, text=msg)
+    else:
+        msg = config.get('messages', 'unsubscribe')
+        bot.sendMessage(chat_id=chat_id, text=msg)
+        job.set_enabled(False)
+        job.schedule_removal()
+        
 
 
 def error_handle(bot, update, error):
@@ -182,7 +188,6 @@ def error_handle(bot, update, error):
 def main():
     logger.info('Starting the Unni Bot!')
     updater = Updater(TELEGRAM_TOKEN)
-    updater = Updater('323634875:AAHS6onmJT9vu03HF3yG0hwooIl_SPMx6E0')
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler(START_CMD, start_handle))
@@ -196,9 +201,11 @@ def main():
     for future_cmd in FUTURE_CMDS:
         dp.add_handler(CommandHandler(future_cmd, future_handle))
 
-
-    dp.add_handler(CommandHandler('subscribe', sub_handle, pass_job_queue=True))
-    dp.add_handler(CommandHandler('unsubscribe', unsub_handle, pass_job_queue=True))
+    for sub_cmd in SUB_CMDS:
+        dp.add_handler(CommandHandler(sub_cmd, sub_handle, pass_job_queue=True))
+    
+    for unsub_cmd in UNSUB_CMDS:
+        dp.add_handler(CommandHandler(unsub_cmd, unsub_handle, pass_job_queue=True))
 
     dp.add_error_handler(error_handle)
 
