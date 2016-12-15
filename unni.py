@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import ConfigParser
 import telegram
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Job
 import logging
 import os
 import urllib2
@@ -25,6 +25,11 @@ START_CMD = config.get('commands', 'start')
 HELP_CMDS = config.get('commands', 'help').replace(" ", "").split(',')
 TODAY_CMDS = config.get('commands', 'today').replace(" ", "").split(',')
 FUTURE_CMDS = config.get('commands', 'future').replace(" ", "").split(',')
+SUB_CMDS = config.get('commands', 'subscribe').replace(" ", "").split(',')
+UNSUB_CMDS = config.get('commands', 'unsubscribe').replace(" ", "").split(',')
+
+
+SUB_FREQUENCY = float(config.get('subscribe', 'frequency'))
 
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
@@ -89,7 +94,9 @@ def help_handle(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
                      text=msg.format(
                          today_cmd=TODAY_CMDS,
-                         future_cmd=FUTURE_CMDS))
+                         future_cmd=FUTURE_CMDS,
+                         sub_cmd=SUB_CMDS,
+                         unsub_cmd=UNSUB_CMDS))
 
 
 def today_handle(bot, update):
@@ -102,8 +109,11 @@ def today_handle(bot, update):
 
     if not today_events:
         event_string = processEvent(events[0],isFuture)
-        msg = config.get('messages', 'failure') + "\n\n" + config.get('messages', 'next_event') + "\n" + event_string.encode('utf8')
-        bot.sendMessage(chat_id=update.message.chat_id, text=msg, parse_mode=telegram.ParseMode.MARKDOWN)
+        msg = config.get('messages', 'failure') + "\n\n" + \
+                config.get('messages', 'next_event') + "\n" + \
+                event_string.encode('utf8')
+        bot.sendMessage(chat_id=update.message.chat_id, text=msg, 
+            parse_mode=telegram.ParseMode.MARKDOWN)
     else:
         msg = config.get('messages', 'today')
         msg += "\n" + today_events
@@ -129,6 +139,41 @@ def future_handle(bot, update):
                          parse_mode=telegram.ParseMode.MARKDOWN)
 
 
+def get_job(jobs, chat_id):
+    for job in jobs:
+        if job.context.message.chat_id == chat_id:
+            return job
+
+    return None
+
+
+def sub_job_handle(bot, job):
+    today_handle(bot, job.context)
+
+
+def sub_handle(bot, update, job_queue):
+    msg = config.get('messages', 'subscribe')
+    hours = int(SUB_FREQUENCY/3600)
+    bot.send_message(chat_id=update.message.chat_id,
+                     text=msg.format(frequency=hours))
+
+    job = Job(sub_job_handle, SUB_FREQUENCY, repeat=True, context=update)
+    job_queue.put(job, next_t=0.0)
+
+
+def unsub_handle(bot, update, job_queue):
+    chat_id = update.message.chat_id
+    
+    job = get_job(job_queue.jobs(), chat_id)
+    if job is not None:
+        msg = config.get('messages', 'unsubscribe')
+        bot.sendMessage(chat_id=chat_id, text=msg)
+        job.schedule_removal()
+    else:
+        msg = config.get('messages', 'unsubscribe_fail')
+        bot.sendMessage(chat_id=chat_id, text=msg)
+
+
 def error_handle(bot, update, error):
     """Handle errors"""
     logger.warn('Update "%s" caused error "%s"' % (update, error))
@@ -137,8 +182,8 @@ def error_handle(bot, update, error):
 def main():
     logger.info('Starting the Unni Bot!')
     updater = Updater(TELEGRAM_TOKEN)
+    updater = Updater('323634875:AAHS6onmJT9vu03HF3yG0hwooIl_SPMx6E0')
     dp = updater.dispatcher
-
 
     dp.add_handler(CommandHandler(START_CMD, start_handle))
 
@@ -150,6 +195,10 @@ def main():
 
     for future_cmd in FUTURE_CMDS:
         dp.add_handler(CommandHandler(future_cmd, future_handle))
+
+
+    dp.add_handler(CommandHandler('subscribe', sub_handle, pass_job_queue=True))
+    dp.add_handler(CommandHandler('unsubscribe', unsub_handle, pass_job_queue=True))
 
     dp.add_error_handler(error_handle)
 
