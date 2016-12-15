@@ -22,9 +22,9 @@ SOURCE_URL = config.get('source', 'url')
 
 # Top level commands for the bot
 START_CMD = config.get('commands', 'start')
-HELP_CMD = config.get('commands', 'help')
-TODAY_CMD = config.get('commands', 'today')
-FUTURE_CMD = config.get('commands', 'future')
+HELP_CMDS = config.get('commands', 'help').replace(" ", "").split(',')
+TODAY_CMDS = config.get('commands', 'today').replace(" ", "").split(',')
+FUTURE_CMDS = config.get('commands', 'future').replace(" ", "").split(',')
 
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
@@ -80,7 +80,7 @@ def start_handle(bot, update):
                      text=msg.format(
                          user_name=update.message.from_user.first_name,
                          bot_name=bot.name,
-                         help_cmd=HELP_CMD))
+                         help_cmd=HELP_CMDS))
 
 
 def help_handle(bot, update):
@@ -88,8 +88,8 @@ def help_handle(bot, update):
     msg = config.get('messages', 'help')
     bot.send_message(chat_id=update.message.chat_id,
                      text=msg.format(
-                         today_cmd=TODAY_CMD,
-                         future_cmd=FUTURE_CMD))
+                         today_cmd=TODAY_CMDS,
+                         future_cmd=FUTURE_CMDS))
 
 
 def today_handle(bot, update):
@@ -139,10 +139,17 @@ def main():
     updater = Updater(TELEGRAM_TOKEN)
     dp = updater.dispatcher
 
+
     dp.add_handler(CommandHandler(START_CMD, start_handle))
-    dp.add_handler(CommandHandler(HELP_CMD, help_handle))
-    dp.add_handler(CommandHandler(TODAY_CMD, today_handle))
-    dp.add_handler(CommandHandler(FUTURE_CMD, future_handle))
+
+    for help_cmd in HELP_CMDS:
+        dp.add_handler(CommandHandler(help_cmd, help_handle))
+
+    for today_cmd in TODAY_CMDS:
+        dp.add_handler(CommandHandler(today_cmd, today_handle))
+
+    for future_cmd in FUTURE_CMDS:
+        dp.add_handler(CommandHandler(future_cmd, future_handle))
 
     dp.add_error_handler(error_handle)
 
