@@ -148,6 +148,8 @@ def get_job(jobs, chat_id):
 
 
 def sub_job_handle(bot, job):
+    bot.send_message(chat_id=job.context.message.chat_id, text=config.get('messages', 'subscribe_header')
+                                                                .format(user_name=job.context.message.from_user.first_name, unsub_cmd=UNSUB_CMDS))
     today_handle(bot, job.context)
 
 
