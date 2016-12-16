@@ -64,7 +64,7 @@ today = Gli eventi di oggi sono:
 future = I prossimi eventi sono:
 subscribe = Grazie per esserti iscritto a unni. 
     Verrai notificato ogni {frequency} ore sugli eventi del giorno
-subscribe_header = Ciao {user_name}! Ecco gli eventi vicini a te di oggi: Se non desideri più ricevere queste notifiche,digita /{unsub_cmd}
+subscribe_header = Ciao {user_name}! Ecco gli eventi di oggi: Se non desideri più ricevere queste notifiche,digita /{unsub_cmd}
 subscribe_fail = Sei già registrato a unni
 unsubscribe = Unni non ti invierà piú notifiche
 unsubscribe_fail = Non ti sei mai registrato per le notifiche di unni
